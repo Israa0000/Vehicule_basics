@@ -16,7 +16,6 @@ public class movement : MonoBehaviour
     public bool inputTurnLeft;
     public bool inputTurnRight;
     public bool inputBrake;
-    public bool inputReverse;
 
     void Start()
     {
@@ -28,13 +27,16 @@ public class movement : MonoBehaviour
         inputAccelerate = Input.GetKey(KeyCode.W);
         inputTurnLeft = Input.GetKey(KeyCode.A);
         inputTurnRight = Input.GetKey(KeyCode.D);
-}
+        inputBrake = Input.GetKey(KeyCode.S);
+    }
     private void FixedUpdate()
     {
         Move();
     }
     void Move()
     {
+        bool isMovingForward = Vector3.Dot(rb.velocity, transform.forward) > 0;
+
         //ACELERAR
         if (inputAccelerate)
         {
@@ -59,8 +61,23 @@ public class movement : MonoBehaviour
             rb.MoveRotation(rb.rotation * Quaternion.Euler(0, turnSpeed * Time.deltaTime, 0));
         }
 
-        //
+        if (inputBrake && !isMovingForward)
+        {
+            if (rb.velocity.magnitude > 0)
+            {
+                rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, brakeForce * Time.deltaTime);
+            }
+        }
+
+        if (inputBrake && isMovingForward)
+        {
+            Vector3 backward_movement = -transform.forward * speed * Time.deltaTime;
+            rb.velocity += backward_movement;
+
+            if (rb.velocity.magnitude >= maxSpeed)
+            {
+                rb.velocity = rb.velocity.normalized * maxSpeed;
+            }
+        }
     }
-
 }
-

@@ -6,8 +6,17 @@ using UnityEngine;
 public class movement : MonoBehaviour
 {
     Rigidbody rb;
+
     public float speed;
-    public float maxSpeed;
+    public float maxSpeed = 180;
+    public float turnSpeed = 200;
+    public float brakeForce = 10;
+
+    public bool inputAccelerate;
+    public bool inputTurnLeft;
+    public bool inputTurnRight;
+    public bool inputBrake;
+    public bool inputReverse;
 
     void Start()
     {
@@ -16,27 +25,42 @@ public class movement : MonoBehaviour
 
     void Update()
     {
-        Move();
-    }
-
+        inputAccelerate = Input.GetKey(KeyCode.W);
+        inputTurnLeft = Input.GetKey(KeyCode.A);
+        inputTurnRight = Input.GetKey(KeyCode.D);
+}
     private void FixedUpdate()
     {
-        Vector3 playerVelocity = transform.forward * speed * Time.deltaTime;
-        Vector3 currentVelocity = rb.velocity + playerVelocity;
-        
+        Move();
     }
-
-    public void Move()
+    void Move()
     {
-        if (Input.GetKey(KeyCode.W))
+        //ACELERAR
+        if (inputAccelerate)
         {
+            Vector3 forward_movement = transform.forward * speed * Time.deltaTime;
+            rb.velocity += forward_movement;
 
-            if (currentVelocity.magnitude > maxSpeed)
+            if (rb.velocity.magnitude >= maxSpeed)
             {
-                currentVelocity = currentVelocity.normalized * maxSpeed; 
+                rb.velocity = rb.velocity.normalized * maxSpeed;
             }
-
-            rb.velocity = new Vector3(currentVelocity.x, rb.velocity.y, currentVelocity.z);
         }
+
+        //GIRAR
+
+        if (inputTurnLeft)
+        {
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0, -turnSpeed * Time.deltaTime, 0));
+        }
+
+        if (inputTurnRight)
+        {
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(0, turnSpeed * Time.deltaTime, 0));
+        }
+
+        //
     }
+
 }
+

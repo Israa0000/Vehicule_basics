@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Rendering;
+using UnityEditor.U2D;
 using UnityEngine;
 
 public class movement : MonoBehaviour
@@ -10,7 +11,8 @@ public class movement : MonoBehaviour
     public float speed;
     public float maxSpeed = 180;
     public float turnSpeed = 200;
-    public float brakeForce = 10;
+    public float brakeForce;
+    public float maxReverseSpeed = 30;
 
     public bool inputAccelerate;
     public bool inputTurnLeft;
@@ -28,6 +30,8 @@ public class movement : MonoBehaviour
         inputTurnLeft = Input.GetKey(KeyCode.A);
         inputTurnRight = Input.GetKey(KeyCode.D);
         inputBrake = Input.GetKey(KeyCode.S);
+
+        print(rb.velocity.magnitude);
     }
     private void FixedUpdate()
     {
@@ -35,7 +39,6 @@ public class movement : MonoBehaviour
     }
     void Move()
     {
-        bool isMovingForward = Vector3.Dot(rb.velocity, transform.forward) > 0;
 
         //ACELERAR
         if (inputAccelerate)
@@ -50,7 +53,6 @@ public class movement : MonoBehaviour
         }
 
         //GIRAR
-
         if (inputTurnLeft)
         {
             rb.MoveRotation(rb.rotation * Quaternion.Euler(0, -turnSpeed * Time.deltaTime, 0));
@@ -61,23 +63,29 @@ public class movement : MonoBehaviour
             rb.MoveRotation(rb.rotation * Quaternion.Euler(0, turnSpeed * Time.deltaTime, 0));
         }
 
-        if (inputBrake && !isMovingForward)
+        //FRENO Y MARCHA ATRAS
+        if (inputBrake)
         {
-            if (rb.velocity.magnitude > 0)
-            {
-                rb.velocity = Vector3.Lerp(rb.velocity, Vector3.zero, brakeForce * Time.deltaTime);
-            }
-        }
 
-        if (inputBrake && isMovingForward)
-        {
-            Vector3 backward_movement = -transform.forward * speed * Time.deltaTime;
-            rb.velocity += backward_movement;
-
-            if (rb.velocity.magnitude >= maxSpeed)
+           /* if (rb.velocity.magnitude > 0)
             {
-                rb.velocity = rb.velocity.normalized * maxSpeed;
-            }
+                Vector3 brakeForceMovement = rb.velocity.normalized * -brakeForce * Time.deltaTime;
+                rb.velocity += brakeForceMovement;
+
+            }*/
+
+            rb.velocity = transform.InverseTransformDirection(Vector3.back);
+            rb.velocity = rb.velocity * speed * Time.deltaTime;
+
+
+            /*
+             * si pulso abajo:
+             *      si estoy yendo palante:
+             *          reduzco el velocity hacia 0 0 0
+             *      si no:
+             *          acelero patrás
+             *          
+             */
         }
     }
 }

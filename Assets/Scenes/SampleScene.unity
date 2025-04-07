@@ -139,7 +139,7 @@ MonoBehaviour:
   speed: 34.3
   maxSpeed: 50
   turnSpeed: 200
-  brakeForce: 117.2
+  brakeForce: 25
   maxReverseSpeed: 30
   inputAccelerate: 0
   inputTurnLeft: 0

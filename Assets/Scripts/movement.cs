@@ -39,7 +39,6 @@ public class movement : MonoBehaviour
     }
     void Move()
     {
-
         //ACELERAR
         if (inputAccelerate)
         {
@@ -64,28 +63,36 @@ public class movement : MonoBehaviour
         }
 
         //FRENO Y MARCHA ATRAS
+        Vector3 localVelocity = transform.InverseTransformDirection(rb.velocity);
+        // local.velocity.z = movimiento frontal o trasero local de objeto 
+
         if (inputBrake)
         {
-
-           /* if (rb.velocity.magnitude > 0)
+            // HACIA DELANTE-> FRENAR
+            if (localVelocity.z > 0)
             {
-                Vector3 brakeForceMovement = rb.velocity.normalized * -brakeForce * Time.deltaTime;
+                Vector3 brakeForceMovement = -transform.forward * brakeForce * Time.deltaTime;
                 rb.velocity += brakeForceMovement;
 
-            }*/
+                // LA FUERZA DE FRENADO ES SUFICIENTE PARA EMPEZAR A IR HACIA ATRAS
+                // SI LA SUMA DEL EJE DE VELOCIDAD QUE VA HACIA ATRAS/DELANTE MAS LA FUERZA DE FRENADO = A <0 SE PUEDE ECHAR MARCHA ATRAS
+                if (localVelocity.z + brakeForceMovement.z < 0)
+                {
+                    rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, localVelocity.y, 0));
+                }
+            }
+            else
+            {
+                // SI SE ESTA LLENDO HACIA ATRAS SE ACELERA HACIA ATRA
+                Vector3 reverseMovement = -transform.forward * speed * Time.deltaTime;
+                rb.velocity += reverseMovement;
 
-            rb.velocity = transform.InverseTransformDirection(Vector3.back);
-            rb.velocity = rb.velocity * speed * Time.deltaTime;
-
-
-            /*
-             * si pulso abajo:
-             *      si estoy yendo palante:
-             *          reduzco el velocity hacia 0 0 0
-             *      si no:
-             *          acelero patrás
-             *          
-             */
+                // LIMITAR VELOCIADAD HACIA ATRAS
+                if (localVelocity.z < -maxReverseSpeed)
+                {
+                    rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, localVelocity.y, -maxReverseSpeed));
+                }
+            }
         }
     }
 }

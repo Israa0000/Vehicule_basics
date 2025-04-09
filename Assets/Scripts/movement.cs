@@ -30,8 +30,6 @@ public class movement : MonoBehaviour
         inputTurnLeft = Input.GetKey(KeyCode.A);
         inputTurnRight = Input.GetKey(KeyCode.D);
         inputBrake = Input.GetKey(KeyCode.S);
-
-        print(rb.velocity.magnitude);
     }
     private void FixedUpdate()
     {

@@ -13,11 +13,14 @@ public class movement : MonoBehaviour
     public float turnSpeed = 200;
     public float brakeForce;
     public float maxReverseSpeed = 30;
+    public float handbrakeForce;
+    public float rotationInput = 2;
 
     public bool inputAccelerate;
     public bool inputTurnLeft;
     public bool inputTurnRight;
     public bool inputBrake;
+    public bool inputHandbrake;
 
     void Start()
     {
@@ -30,6 +33,10 @@ public class movement : MonoBehaviour
         inputTurnLeft = Input.GetKey(KeyCode.A);
         inputTurnRight = Input.GetKey(KeyCode.D);
         inputBrake = Input.GetKey(KeyCode.S);
+        inputHandbrake = Input.GetKey(KeyCode.Space);
+        if (inputTurnLeft) rotationInput = -1;
+        else if (inputTurnRight) rotationInput = 1;
+        else rotationInput = 0;
     }
     private void FixedUpdate()
     {
@@ -66,26 +73,23 @@ public class movement : MonoBehaviour
 
         if (inputBrake)
         {
-            // HACIA DELANTE-> FRENAR
+            // HACIA DELANTE -> FRENAR
             if (localVelocity.z > 0)
             {
-                Vector3 brakeForceMovement = -transform.forward * brakeForce * Time.deltaTime;
-                rb.velocity += brakeForceMovement;
+                rb.velocity = rb.velocity / brakeForce;
 
-                // LA FUERZA DE FRENADO ES SUFICIENTE PARA EMPEZAR A IR HACIA ATRAS
-                // SI LA SUMA DEL EJE DE VELOCIDAD QUE VA HACIA ATRAS/DELANTE MAS LA FUERZA DE FRENADO = A <0 SE PUEDE ECHAR MARCHA ATRAS
-                if (localVelocity.z + brakeForceMovement.z < 0)
+                if (localVelocity.z < 0)
                 {
                     rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, localVelocity.y, 0));
                 }
             }
             else
             {
-                // SI SE ESTA LLENDO HACIA ATRAS SE ACELERA HACIA ATRA
+                // SI SE ESTA YENDO HACIA ATRÁS, ACELERAR HACIA ATRÁS
                 Vector3 reverseMovement = -transform.forward * speed * Time.deltaTime;
                 rb.velocity += reverseMovement;
 
-                // LIMITAR VELOCIADAD HACIA ATRAS
+                // MAX SPEED (HACIA ATRAS)
                 if (localVelocity.z < -maxReverseSpeed)
                 {
                     rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, localVelocity.y, -maxReverseSpeed));
@@ -94,3 +98,5 @@ public class movement : MonoBehaviour
         }
     }
 }
+
+

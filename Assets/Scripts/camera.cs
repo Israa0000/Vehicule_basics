@@ -1,22 +1,26 @@
-using System;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [SerializeField] Transform player;
+    [SerializeField] private Transform player;
+
+    [Header("Camera Settings")]
+    public float distanceBehind = 6f;
+    public float heightAbove = 3f;
+    public float smoothTime = 0.2f;
+
     private Vector3 velocity = Vector3.zero;
-    public Vector3 offset = new Vector3(0f, 2f, -3f);
-    public float smoothTime = 0.3f;
-    public float minDistance = 10;
 
     private void FixedUpdate()
     {
-        Vector3 cameraToPlayer = transform.position - player.position;
-        Vector3 cameraToPlayerNormalized = cameraToPlayer.normalized;
 
-        Vector3 targetPosition = player.position + cameraToPlayerNormalized * minDistance + offset;
+        // CALCULAR POSICION
+        Vector3 targetPosition = player.position
+                               - player.forward * distanceBehind
+                               + Vector3.up * heightAbove;
 
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
-        transform.LookAt(player);
+
+        transform.LookAt(player.position + Vector3.up * 1.5f);
     }
 }

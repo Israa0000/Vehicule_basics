@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Obstacle : MonoBehaviour
@@ -10,11 +11,11 @@ public class Obstacle : MonoBehaviour
     [SerializeField] float downDuration = 1f; // DURACION B-A
     [SerializeField] AnimationCurve upEase; 
     [SerializeField] AnimationCurve downEase;
-
     void Start()
     {
         StartCoroutine(MoveObject());
     }
+
 
     IEnumerator MoveObject()
     {

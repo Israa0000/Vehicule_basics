@@ -7,15 +7,20 @@ using UnityEngine;
 public class movement : MonoBehaviour
 {
     Rigidbody rb;
+    TrailRenderer trail;
 
+    [Header("Speeds Types")]
     public float speed;
     public float maxSpeed = 180;
     public float turnSpeed = 200;
-    public float brakeForce;
     public float maxReverseSpeed = 30;
-    public float handbrakeForce;
-    public float rotationInput = 2;
 
+    [Header("Forces")]
+    public float brakeForce;
+    public float handbrakeForce;
+    public float handbrakeTurnBoost;
+
+    [Header("Boolean")]
     public bool inputAccelerate;
     public bool inputTurnLeft;
     public bool inputTurnRight;
@@ -25,21 +30,27 @@ public class movement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        trail = GetComponent<TrailRenderer>();
+        trail.emitting = false;
     }
 
     void Update()
     {
-        inputAccelerate = Input.GetKey(KeyCode.W);
-        inputTurnLeft = Input.GetKey(KeyCode.A);
+        inputAccelerate = Input.GetKey(KeyCode.W);// R2
+        inputTurnLeft = Input.GetKey(KeyCode.A); 
         inputTurnRight = Input.GetKey(KeyCode.D);
-        inputBrake = Input.GetKey(KeyCode.S);
-        inputHandbrake = Input.GetKey(KeyCode.Space);
-        if (inputTurnLeft) rotationInput = -1;
-        else if (inputTurnRight) rotationInput = 1;
-        else rotationInput = 0;
+        inputBrake = Input.GetKey(KeyCode.S); // L2
+        inputHandbrake = Input.GetKey(KeyCode.Space); // X
+
+        if (!inputHandbrake)
+        {
+            trail.emitting = false;
+        }
     }
+
     private void FixedUpdate()
     {
+        rb.useGravity = true;
         Move();
     }
     void Move()
@@ -69,34 +80,53 @@ public class movement : MonoBehaviour
 
         //FRENO Y MARCHA ATRAS
         Vector3 localVelocity = transform.InverseTransformDirection(rb.velocity);
-        // local.velocity.z = movimiento frontal o trasero local de objeto 
 
         if (inputBrake)
         {
-            // HACIA DELANTE -> FRENAR
-            if (localVelocity.z > 0)
+            if (localVelocity.z > 0.1f)  //SI ESTA YENDO HACIA ADELANTE
             {
-                rb.velocity = rb.velocity / brakeForce;
-
-                if (localVelocity.z < 0)
-                {
-                    rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, localVelocity.y, 0));
-                }
+                // SE APLICA UNA FUERZA DE FRENADO PROPORCIONAL (NO DIVISION DIRECTA).
+                Vector3 brakeForceVector = -rb.velocity.normalized * brakeForce;
+                rb.AddForce(brakeForceVector, ForceMode.Acceleration);
             }
-            else
-            {
-                // SI SE ESTA YENDO HACIA ATRÁS, ACELERAR HACIA ATRÁS
+            else  // HACIA ATRAS
+            { 
                 Vector3 reverseMovement = -transform.forward * speed * Time.deltaTime;
                 rb.velocity += reverseMovement;
 
-                // MAX SPEED (HACIA ATRAS)
-                if (localVelocity.z < -maxReverseSpeed)
+                float currentReverseSpeed = -transform.InverseTransformDirection(rb.velocity).z;
+                if (currentReverseSpeed > maxReverseSpeed)
                 {
                     rb.velocity = transform.TransformDirection(new Vector3(localVelocity.x, localVelocity.y, -maxReverseSpeed));
                 }
             }
         }
+
+        // FRENO DE MANO
+        if (inputHandbrake)
+        {
+            trail.emitting = true;
+
+            Vector3 brakeForceVector = -rb.velocity.normalized * handbrakeForce;  
+            rb.AddForce(brakeForceVector, ForceMode.Acceleration);
+
+            if (rb.velocity.magnitude < 0.5f) 
+            {
+                rb.velocity = Vector3.zero;
+            }
+
+            // DERRAPE AL GIRAR
+            if (inputTurnLeft)
+            {
+                rb.angularVelocity += new Vector3(0, -handbrakeTurnBoost * Time.deltaTime, 0); 
+            }
+            else if (inputTurnRight)
+            {
+                rb.angularVelocity += new Vector3(0, handbrakeTurnBoost * Time.deltaTime, 0);  
+            }
+        }
     }
 }
+
 
 
